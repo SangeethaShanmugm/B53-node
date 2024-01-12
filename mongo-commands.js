@@ -139,3 +139,158 @@ db.products.find({}).sort({ rating: -1 }).limit(5).pretty()
 
 db.products.find({}).sort({ rating: -1 }).limit(5).skip(2).pretty()
 
+//update all products with category as electronics
+
+
+db.products.updateMany({}, { $set: { category: "electronics" } })
+
+db.products.updateMany({ category: "electronics" }, { $set: { category: "mobile" } })
+
+db.products.updateOne({ name: "Apple AirPods Pro (2nd Generation)" }, { $set: { category: "accessories" } })
+
+db.products.findOne({ name: "Apple AirPods Pro (2nd Generation)" })
+
+db.products.findOne({ category: "mobile" })
+
+//delete products which rating > 4.9
+
+db.products.deleteOne({ rating: { $gt: 4.9 } })
+
+//delete all products with rating < 3.5
+
+
+db.products.deleteMany({ rating: { $lt: 3.5 } })
+
+//delete one products with category as accessories
+
+db.products.findOne({ category: "accessories" })
+
+db.products.deleteOne({ category: "accessories" })
+
+
+//aggregation 
+
+db.orders.insertMany(
+    [
+        { _id: 0, productName: "Steel Beam", status: "new", quantity: 10 },
+        { _id: 1, productName: "Steel Beam", status: "urgent", quantity: 20 },
+        { _id: 2, productName: "Steel Beam", status: "urgent", quantity: 30 },
+        { _id: 3, productName: "Iron Rod", status: "new", quantity: 15 },
+        { _id: 4, productName: "Iron Rod", status: "urgent", quantity: 50 },
+        { _id: 5, productName: "Iron Rod", status: "urgent", quantity: 10 },
+    ]
+)
+
+db.orders.find().pretty()
+
+
+//match urgent product
+//select * from orders where status= "urgent"
+
+db.orders.aggregate([
+    //stage 1 => match urgent product
+    {
+        $match: { status: "urgent" }
+    },
+    //stage 2 => group based on productName and sum its quantity
+    {
+        $group: {
+            _id: "$productName",
+            totalUrgentQuantity: { $sum: "$quantity" }
+        }
+    }
+])
+
+
+// { "_id" : "Steel Beam", "totalUrgentQuantity" : 50 }
+// { "_id" : "Iron Rod", "totalUrgentQuantity" : 60 }
+
+
+//group based on productName and sum its quantity
+//select sum(quantity) from orders where status= "urgent" group by productName
+
+//basic cursor methods => map, toArray, pretty, forEach, limit, count, sort
+
+//cursor => pointer
+
+var myCursor = db.orders.find({ _id: 5 }).pretty()
+
+//next()
+
+var myCursor = db.orders.find({ _id: { $gt: 3 } }).pretty()
+
+while (myCursor.hasNext()) {
+    print(tojson(myCursor.next()))
+}
+
+//forEach
+var myCursor = db.orders.find({ _id: 5 }).pretty()
+myCursor.forEach(printjson)//func
+
+var myCursor = db.orders.find()
+myCursor.forEach(function (product) {
+    print(`ProductName: ${product.productName}, Quantity: ${product.quantity} `)
+})
+
+//urgent products
+var urgentOrderCursor = db.orders.find({ status: "urgent" })
+
+urgentOrderCursor.forEach(function (urgentOrder) {
+    print(`OrderID: ${urgentOrder._id}, ProductName: ${urgentOrder.productName}, status: ${urgentOrder.status} ,Quantity: ${urgentOrder.quantity} `)
+
+})
+
+
+//count
+
+
+db.orders.find().count()
+
+db.products.find().count()
+
+//toArray()
+
+var allOrders = db.orders.find().toArray()
+
+allOrders.forEach(function (order) {
+    print(`OrderID: ${order._id}, ProductName: ${order.productName}`)
+})
+
+
+//map()
+
+var listProduct = db.orders.find().map(function (data) {
+    return data.productName
+})
+
+var listProduct = db.orders.find().map(function (data) {
+    return data.quantity * 100
+})
+
+//distinct
+
+db.orders.distinct("productName")
+
+db.products.distinct("category")
+
+
+//mapReduce funct
+
+//define map funct
+var mapFunct = function () {
+    emit(this.productName, this.quantity)
+}
+
+//define reducer func
+
+var reduceFunc = function (key, values) {
+    return Array.sum(values)
+}
+
+var result = db.orders.mapReduce(
+    mapFunct,
+    reduceFunc,
+    { out: "totalQuantity" }  //specify collection
+)
+
+db.totalQuantity.find().forEach(printjson)
