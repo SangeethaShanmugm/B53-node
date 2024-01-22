@@ -1,4 +1,10 @@
-[
+const express = require('express')
+// import express from "express"
+const app = express()
+const PORT = 5000
+// req => what we send to server
+// res => what we receive from server
+const products = [
     {
         "id": "1",
         "name": " iPhone 15 (128 GB)",
@@ -90,3 +96,30 @@
         "category": "Laptop"
     }
 ]
+
+app.get('/', (req, res) => {
+    res.send('Hello Everyone😀')
+})
+
+//Task 
+// /products => all products
+// /products?category=mobile => only mobile category
+// /products?category=mobile&rating=3.5 => filter by category & rating
+// /products?rating=3.5 => filter by rating
+
+app.get('/products', (req, res) => {
+    const { category } = req.query
+    console.log(req.query, category)
+    const product = products.filter((pd) => pd.category === category)
+    res.send(product)
+})
+
+app.get('/products/:id', (req, res) => {
+    const { id } = req.params
+    console.log(req.params, id)
+    const product = products.find((pd) => pd.id === id)
+    res.send(product)
+})
+
+
+app.listen(PORT, () => console.log("Server started on PORT", PORT))
