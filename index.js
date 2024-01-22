@@ -1,7 +1,25 @@
-const express = require('express')
-// import express from "express"
+// const express = require('express')
+// const { MongoClient } = require('mongodb');
+import express from "express";
+import { MongoClient } from "mongodb";
 const app = express()
 const PORT = 5000
+
+//Mongodb connection 
+
+const MONGO_URL = "mongodb://127.0.0.1:27017"
+//'mongodb://localhost:27017';
+
+async function createConnection() {
+    const client = new MongoClient(MONGO_URL)
+    await client.connect()
+    console.log("Mongodb is connected")
+    return client
+}
+const client = await createConnection()
+
+
+
 // req => what we send to server
 // res => what we receive from server
 const products = [
@@ -102,16 +120,27 @@ app.get('/', (req, res) => {
 })
 
 //Task 
-// /products => all products
-// /products?category=mobile => only mobile category
-// /products?category=mobile&rating=3.5 => filter by category & rating
-// /products?rating=3.5 => filter by rating
+// /products => all products ✅
+// /products?category=mobile => only mobile category✅
+// /products?category=mobile&rating=3.5 => filter by category & rating✅
+// /products?rating=3.5 => filter by rating✅
 
 app.get('/products', (req, res) => {
-    const { category } = req.query
+    const { category, rating } = req.query
     console.log(req.query, category)
-    const product = products.filter((pd) => pd.category === category)
-    res.send(product)
+    // let filteredProducts = products //copy by reference => same address
+    // if (category) {
+    //     filteredProducts = filteredProducts.filter((pd) => pd.category === category)
+    // }
+    // if (rating) {
+    //     filteredProducts = filteredProducts.filter((pd) => pd.rating === +rating)
+    // }
+
+    const filteredProducts = products.filter((pd) => (!category || pd.category === category) &&
+        (!rating || pd.rating === +rating)
+    )
+
+    res.send(filteredProducts);
 })
 
 app.get('/products/:id', (req, res) => {
