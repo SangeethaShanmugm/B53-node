@@ -17,3 +17,33 @@ max
 min
 first 
 last
+
+
+
+
+//Task 
+// /products => all products ✅
+// /products?category=mobile => only mobile category✅
+// /products?category=mobile&rating=3.5 => filter by category & rating✅
+// /products?rating=3.5 => filter by rating✅
+
+
+
+
+ // let filteredProducts = products //copy by reference => same address
+    // if (category) {
+    //     filteredProducts = filteredProducts.filter((pd) => pd.category === category)
+    // }
+    // if (rating) {
+    //     filteredProducts = filteredProducts.filter((pd) => pd.rating === +rating)
+    // }
+
+    const filteredProducts = products.filter((pd) => (!category || pd.category === category) &&
+        (!rating || pd.rating === +rating)
+    )
+
+
+
+ // products.find((pd) => pd.id === id)
+        //db.products.findOne({id:"1"})
+        

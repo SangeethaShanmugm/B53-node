@@ -2,12 +2,23 @@
 // const { MongoClient } = require('mongodb');
 import express from "express";
 import { MongoClient } from "mongodb";
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 const app = express()
-const PORT = 5000
+const PORT = process.env.PORT
+
+
+//Inbuilt middleware
+app.use(express.json()) //converting body to JSON
+
+
 
 //Mongodb connection 
 
-const MONGO_URL = "mongodb://127.0.0.1:27017"
+
+const MONGO_URL = process.env.MONGO_URL
+//"mongodb://127.0.0.1:27017"
 //'mongodb://localhost:27017';
 
 async function createConnection() {
@@ -119,36 +130,54 @@ app.get('/', (req, res) => {
     res.send('Hello Everyone😀')
 })
 
-//Task 
-// /products => all products ✅
-// /products?category=mobile => only mobile category✅
-// /products?category=mobile&rating=3.5 => filter by category & rating✅
-// /products?rating=3.5 => filter by rating✅
-
-app.get('/products', (req, res) => {
+app.get('/products', async (req, res) => {
     const { category, rating } = req.query
     console.log(req.query, category)
-    // let filteredProducts = products //copy by reference => same address
-    // if (category) {
-    //     filteredProducts = filteredProducts.filter((pd) => pd.category === category)
-    // }
-    // if (rating) {
-    //     filteredProducts = filteredProducts.filter((pd) => pd.rating === +rating)
-    // }
-
-    const filteredProducts = products.filter((pd) => (!category || pd.category === category) &&
-        (!rating || pd.rating === +rating)
-    )
-
-    res.send(filteredProducts);
+    if (req.query.rating) {
+        req.query.rating = +req.query.rating
+    }
+    const product = await client.db("b53-node").collection("products").find(req.query).toArray()
+    res.send(product);
 })
 
-app.get('/products/:id', (req, res) => {
+app.get('/products/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        console.log(req.params, id)
+        const product = await client.db("b53-node").collection("products").findOne({ id: id })
+        console.log(product)
+        product ? res.send(product) : res.status(404).send({ message: "No Product Found" })
+        console.log("console log method")
+        console.error("console error method")
+        // var a = 10 / 0;
+        // console.log(a)
+    } catch (error) {
+        console.log("Error", error)
+        res.status(500).send({ message: "Internal Server Error" })
+    }
+})
+
+
+//delete product
+
+app.delete('/products/:id', async (req, res) => {
     const { id } = req.params
     console.log(req.params, id)
-    const product = products.find((pd) => pd.id === id)
+    const product = await client.db("b53-node").collection("products").deleteOne({ id: id })
+    console.log(product)
     res.send(product)
 })
+
+
+//add products => 11:15
+app.post('/products', async (req, res) => {
+    //where do we pass data 
+    const newProduct = req.body
+    console.log(newProduct)
+    const result = await client.db("b53-node").collection("products").insertMany(newProduct)
+    res.send(result)
+})
+
 
 
 app.listen(PORT, () => console.log("Server started on PORT", PORT))
