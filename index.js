@@ -3,7 +3,9 @@
 import express from "express";
 import { MongoClient } from "mongodb";
 import * as dotenv from 'dotenv'
+import bcrypt from "bcrypt"
 import { productsRoute } from "./routes/products.js";
+import { usersRoute } from "./routes/users.js";
 
 dotenv.config()
 const app = express()
@@ -134,6 +136,17 @@ app.get('/', (req, res) => {
 
 app.use("/products", productsRoute)
 
+app.use("/users", usersRoute)
+
+
 app.listen(PORT, () => console.log("Server started on PORT", PORT))
 
 
+async function genPassword(password) {
+    const salt = await bcrypt.genSalt(10)//bcrypt.genSalt(no. of rounds)
+    console.log(salt)
+    const hashedPassword = await bcrypt.hash(password, salt)
+    console.log(hashedPassword)
+}
+
+genPassword("password@123")

@@ -13,4 +13,10 @@ function addProducts(newProduct) {
     return client.db("b53-node").collection("products").insertMany(newProduct);
 }
 
-export { getAllProducts, getProductById, deleteProductById, addProducts }
+
+function updateProducts(id, updatedProduct) {
+    return client.db("b53-node").collection("products")
+        .updateOne({ id: id }, { $set: updatedProduct });
+}
+
+export { getAllProducts, getProductById, deleteProductById, addProducts, updateProducts }

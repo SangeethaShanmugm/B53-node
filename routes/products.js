@@ -1,5 +1,5 @@
 import express from "express"
-import { getAllProducts, getProductById, deleteProductById, addProducts } from "../helper.js";
+import { getAllProducts, getProductById, deleteProductById, addProducts, updateProducts } from "../helper.js";
 
 
 const router = express.Router()//express router
@@ -47,6 +47,14 @@ router.post('/', async (req, res) => {
     const newProduct = req.body
     console.log(newProduct)
     const result = await addProducts(newProduct)
+    res.send(result)
+})
+
+router.put('/:id', async (req, res) => {
+    const { id } = req.params
+    //where do we pass data 
+    const updatedProduct = req.body
+    const result = await updateProducts(id, updatedProduct)
     res.send(result)
 })
 
