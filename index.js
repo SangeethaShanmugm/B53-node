@@ -5,12 +5,14 @@ import { MongoClient } from "mongodb";
 import * as dotenv from 'dotenv'
 import { productsRoute } from "./routes/products.js";
 import { usersRoute } from "./routes/users.js";
+import cors from 'cors'
+
 
 dotenv.config()
 const app = express()
 const PORT = process.env.PORT
 
-
+app.use(cors())
 //Inbuilt middleware
 app.use(express.json()) //converting body to JSON
 
